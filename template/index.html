@@ -1,0 +1,95 @@
+!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Painel BTC/USDT em Tempo Real</title>
+  <!-- Bootstrap CSS (CDN) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.1.3/css/bootstrap.min.css" integrity="sha384-" crossorigin="anonymous" />
+  <style>
+    body { padding: 20px; background-color: #f8f9fa; }
+    #priceChart { max-width: 800px; margin: 0 auto 30px auto; }
+  </style>
+</head>
+<body>
+  <h2 class="text-center">Bitcoin BTC/USDT – Preço em Tempo Real</h2>
+  <p class="text-center">Último preço: <strong><span id="latestPrice">--</span> USDT</strong></p>
+
+  <!-- Gráfico -->
+  <canvas id="priceChart" width="800" height="400"></canvas>
+
+  <!-- Área de alerta de padrões -->
+  <div id="patternAlert" class="alert text-center fw-bold" style="display:none;"></div>
+
+  <!-- Chart.js (CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Script de atualização em tempo real -->
+  <script>
+    // Contexto do canvas do gráfico
+    const ctx = document.getElementById('priceChart').getContext('2d');
+    // Configurar gráfico de linha usando Chart.js
+    const priceChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],       // timestamps
+        datasets: [{
+          label: 'Preço BTC/USDT',
+          data: [],       // valores de preço correspondentes
+          borderColor: 'rgba(75, 192, 192, 1)',
+          backgroundColor: 'rgba(75, 192, 192, 0.2)',
+          borderWidth: 2,
+          tension: 0.1     // curva suavizada
+        }]
+      },
+      options: {
+        scales: {
+          x: { display: true, title: { display: true, text: 'Horário' } },
+          y: { display: true, title: { display: true, text: 'Preço (USDT)' } }
+        }
+      }
+    });
+
+    // Função para atualizar o gráfico e alertas com dados do backend
+    async function fetchDataAndUpdate() {
+      try {
+        const response = await fetch("/data");
+        const data = await response.json();
+        // Atualizar gráfico com novos dados
+        priceChart.data.labels = data.times;
+        priceChart.data.datasets[0].data = data.prices;
+        priceChart.update();
+        // Atualizar texto do último preço
+        if (data.prices.length > 0) {
+          const latestPrice = data.prices[data.prices.length - 1];
+          document.getElementById('latestPrice').textContent = parseFloat(latestPrice).toFixed(2);
+        }
+        // Exibir alertas de padrões (se houver)
+        const alertDiv = document.getElementById('patternAlert');
+        if (data.alerts && data.alerts.length > 0) {
+          // Concatenar múltiplos alertas em uma única string
+          const alertMsg = data.alerts.join(' | ');
+          alertDiv.textContent = alertMsg;
+          // Definir cor do alerta conforme tipo (alta = verde, baixa = vermelho)
+          if (alertMsg.toLowerCase().includes('alta')) {
+            alertDiv.className = 'alert alert-success text-center fw-bold';
+          } else if (alertMsg.toLowerCase().includes('baixa')) {
+            alertDiv.className = 'alert alert-danger text-center fw-bold';
+          } else {
+            alertDiv.className = 'alert alert-warning text-center fw-bold';
+          }
+          alertDiv.style.display = 'block';
+        } else {
+          // Sem alertas: esconder div
+          alertDiv.style.display = 'none';
+        }
+      } catch (err) {
+        console.error("Erro ao obter dados:", err);
+      }
+    }
+
+    // Obter dados iniciais e iniciar atualização periódica a cada 5 segundos
+    fetchDataAndUpdate();
+    setInterval(fetchDataAndUpdate, 5000);
+  </script>
+</body>
+</html> 
