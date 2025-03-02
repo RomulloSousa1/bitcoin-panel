@@ -166,6 +166,8 @@ def get_data():
     # Obter preço atual da Binance
     try:
         res = requests.get("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT")
+        print(res);
+        print(res.json());
         current_price = float(res.json().get("price", 0.0))
     except Exception as e:
         current_price = prices[-1] if prices else 0.0  # em caso de erro, reutiliza último preço conhecido
