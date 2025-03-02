@@ -9,21 +9,6 @@ app = Flask(__name__)
 times = []
 prices = []
 
-# Inicialização: obter últimos 60 minutos de preço BTC/USDT via API Binance (para gráfico inicial)
-url_klines = "https://api.binance.com/api/v3/klines?symbol=BTCUSDT&interval=1m&limit=60"
-response = requests.get(url_klines)
-if response.status_code == 200:
-    data = response.json()
-    for kline in data:
-        # kline[0] = open time (timestamp em milissegundos), kline[4] = preço de fechamento
-        ts = int(kline[0]) // 1000  # converter para segundos
-        price = float(kline[4])
-        # Formatar timestamp para HH:MM:SS
-        import datetime
-        time_str = datetime.datetime.fromtimestamp(ts).strftime("%H:%M:%S")
-        times.append(time_str)
-        prices.append(price)
-
 # Funções de detecção de padrões:
 def detect_head_and_shoulders(price_series):
     """Detecta padrão Ombro-Cabeça-Ombro (topo) e retorna True se confirmado."""
@@ -164,13 +149,22 @@ def get_data():
     """Endpoint que retorna dados de preço recentes e alertas de padrões."""
     global times, prices
     # Obter preço atual da Binance
+    current_price = prices[-1] if prices else 0.0
     try:
-        res = requests.get("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT")
-        print(res);
-        print(res.json());
-        current_price = float(res.json().get("price", 0.0))
+        res = requests.get("https://api.coinbase.com/v2/prices/BTC-USD/spot", timeout=10)
+        
+        # Verificar se o status code é 200 (OK)
+        if res.status_code == 200:
+            data = res.json()
+            if "data" in data and "amount" in data["data"]:
+                current_price = float(data["data"]["amount"])
+            else:
+                print("API do CoinGecko não retornou dados esperados:", data)
+        else:
+            print(f"Erro na API do CoinGecko: Status {res.status_code}")
+            
     except Exception as e:
-        current_price = prices[-1] if prices else 0.0  # em caso de erro, reutiliza último preço conhecido
+        print(f"Erro ao obter preço do Bitcoin: {str(e)}")
     # Atualizar histórico
     from datetime import datetime
     now_str = datetime.now().strftime("%H:%M:%S")
