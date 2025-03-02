@@ -154,7 +154,7 @@ def detect_flag(price_series):
         if end < trough_val and high_idx > trough_idx:
             return "bearish"
     return None
-app.route("/")
+@app.route("/")
 def index():
     # Renderizar página HTML do painel
     return render_template("index.html")
