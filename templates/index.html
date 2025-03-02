@@ -55,8 +55,9 @@
         const response = await fetch("/data");
         const data = await response.json();
         // Atualizar gráfico com novos dados
-        priceChart.data.labels = data.times;
-        priceChart.data.datasets[0].data = data.prices;
+        const maxPoints = 100;
+        priceChart.data.labels = data.times.slice(-maxPoints);
+        priceChart.data.datasets[0].data = data.prices.slice(-maxPoints);
         priceChart.update();
         // Atualizar texto do último preço
         if (data.prices.length > 0) {
