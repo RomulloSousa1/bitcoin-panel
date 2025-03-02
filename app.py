@@ -3,7 +3,7 @@ import os
 import requests
 from flask import Flask, jsonify, render_template
 
-app = Flask(_name_)
+app = Flask(__name__)
 
 # Listas globais para histórico de tempos e preços
 times = []
@@ -203,6 +203,6 @@ def get_data():
     })
 
 # Executar aplicativo (apenas se rodar localmente; em produção usar gunicorn)
-if _name_ == "_main_":
+if __name__ == "_main_":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
