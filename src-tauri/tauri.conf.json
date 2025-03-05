@@ -1,0 +1,38 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Bitcoin Panel",
+  "version": "1.0.0",
+  "identifier": "com.bitcoin-panel.app",
+  "build": {
+    "beforeDevCommand": "pnpm dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "pnpm build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Bitcoin Panel",
+        "width": 800,
+        "height": 600,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self' https: //cdnjs.cloudflare.com https://cdn.jsdelivr.net; connect-src 'self' https: //api.exchange.coinbase.com; style-src 'self' 'unsafe-inline' https: //cdnjs.cloudflare.com;"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/icon.ico"
+    ],
+    "windows": {
+      "nsis": {
+        "installerIcon": "icons/icon.ico"
+      },
+      "digestAlgorithm": "sha256"
+    }
+  }
+}
